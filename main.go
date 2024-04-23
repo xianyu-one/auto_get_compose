@@ -15,22 +15,31 @@ type Release struct {
 }
 
 func main() {
+	// 判断系统类型和架构
+	system := runtime.GOOS
+	arch := runtime.GOARCH
+
 	// 检查当前用户是否有管理员权限，如果没有，则提权
 	if os.Getuid() != 0 {
 		fmt.Println("This program requires root/administrator privileges to run.")
-		fmt.Println("Attempting to escalate privileges...")
 
-		cmd := exec.Command("sudo", os.Args[0])
-		cmd.Stdout = os.Stdout
-		cmd.Stdin = os.Stdin
-		cmd.Stderr = os.Stderr
+		if system == "windows" {
+			fmt.Println("Please run this program as an administrator.")
+			return
+		} else {
+			fmt.Println("Attempting to escalate privileges...")
+			cmd := exec.Command("sudo", os.Args[0])
+			cmd.Stdout = os.Stdout
+			cmd.Stdin = os.Stdin
+			cmd.Stderr = os.Stderr
 
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println("Error escalating privileges:", err)
+			err := cmd.Run()
+			if err != nil {
+				fmt.Println("Error escalating privileges:", err)
+				return
+			}
 			return
 		}
-		return
 	}
 
 	// 获取仓库latest标签的版本号
@@ -40,10 +49,6 @@ func main() {
 		return
 	}
 	fmt.Printf("Latest version of docker-compose is: %s\n", latestVersion)
-
-	// 判断系统类型和架构
-	system := runtime.GOOS
-	arch := runtime.GOARCH
 
 	// 构建下载链接
 	var downloadURL string
